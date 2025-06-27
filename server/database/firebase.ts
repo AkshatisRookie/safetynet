@@ -23,8 +23,6 @@ if (!getApps().length) {
   app = getApps()[0];
   // console.log("Firebase app already initialized");
 }
-console.log("Firebase app initialized", app);
-console.log("Firebase config", firebaseConfig)
 
 // Export the Firebase Auth instance for use in your app
 export const auth: Auth = getAuth(app);
