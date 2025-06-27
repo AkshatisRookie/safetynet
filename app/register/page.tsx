@@ -68,15 +68,19 @@ export default function RegisterPage() {
       
       // Redirect to login page after successful registration
       router.push("/login")
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Registration error:", error)
-      // Handle specific Firebase errors
-      if (error.code === "auth/email-already-in-use") {
-        setError("This email is already registered")
-      } else if (error.code === "auth/weak-password") {
-        setError("Password should be at least 6 characters")
+      if (typeof error === "object" && error !== null && "code" in error) {
+        const code = (error as { code: string }).code
+        if (code === "auth/email-already-in-use") {
+          setError("This email is already registered")
+        } else if (code === "auth/weak-password") {
+          setError("Password should be at least 6 characters")
+        } else {
+          setError("Registration failed")
+        }
       } else {
-        setError(error.message)
+        setError("An unknown error occurred")
       }
     } finally {
       setIsLoading(false)

@@ -56,9 +56,13 @@ export default function LoginPage() {
       } else {
         router.push("/law-enforcement")
       }
-    } catch (error: any) {
-      console.error("Login error:", error)
-      setError("Invalid email or password")
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        console.error("Login error:", error)
+        setError("Invalid email or password")
+      } else {
+        setError("Invalid email or password")
+      }
       setIsLoading(false)
     }
   }
@@ -115,7 +119,7 @@ export default function LoginPage() {
             </Button>
             {/* Link to registration page */}
             <div className="mt-4 text-center text-sm">
-              Don't have an account?{"  "}  
+              Don&apos;t have an account?{"  "}  
               <Link href="/register" className="underline underline-offset-4 hover:text-primary">
                 Register
               </Link>

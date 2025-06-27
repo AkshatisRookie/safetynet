@@ -11,10 +11,10 @@ import { MapSetup } from "@/components/map-provider"
 
 interface LocationPickerProps {
   value: string
-  onChange: (value: string) => void
+  onChangeAction: (value: string) => void
 }
 
-export function LocationPicker({ value, onChange }: LocationPickerProps) {
+export function LocationPicker({ value, onChangeAction }: LocationPickerProps) {
   const { toast } = useToast()
   const [isMapVisible, setIsMapVisible] = useState(false)
   const { isConfigured } = useMap()
@@ -24,10 +24,10 @@ export function LocationPicker({ value, onChange }: LocationPickerProps) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
           const { latitude, longitude } = position.coords
-          onChange(`${latitude.toFixed(6)}, ${longitude.toFixed(6)}`)
+          onChangeAction(`${latitude.toFixed(6)}, ${longitude.toFixed(6)}`)
           setIsMapVisible(true)
         },
-        (error) => {
+        () => {
           toast({
             variant: "destructive",
             title: "Location Error",
@@ -52,7 +52,7 @@ export function LocationPicker({ value, onChange }: LocationPickerProps) {
           id="location"
           placeholder="Latitude, Longitude"
           value={value}
-          onChange={(e) => onChange(e.target.value)}
+          onChange={(e) => onChangeAction(e.target.value)}
           required
           className="flex-1"
         />

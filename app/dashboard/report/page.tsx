@@ -14,12 +14,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Icons } from "@/components/icons"
 import { useToast } from "@/components/ui/use-toast"
 import "leaflet/dist/leaflet.css"
+import type { Map as LeafletMap, Marker, LeafletMouseEvent, DragEndEvent } from "leaflet"
 
 export default function ReportPage() {
   const router = useRouter()
   const { toast } = useToast()
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [reportType, setReportType] = useState("crime")
   const [crimeType, setCrimeType] = useState("")
   const [location, setLocation] = useState<{ lat: number; lng: number } | null>(null)
   const [description, setDescription] = useState("")
@@ -51,10 +51,11 @@ export default function ReportPage() {
   // Map Picker Component Inline
   function MapPicker({ value, onChange }: { value: { lat: number; lng: number } | null, onChange: (v: { lat: number; lng: number }) => void }) {
     const mapContainer = useRef<HTMLDivElement>(null)
-    const mapRef = useRef<any>(null)
-    const markerRef = useRef<any>(null)
+    const mapRef = useRef<LeafletMap | null>(null)
+    const markerRef = useRef<Marker | null>(null)
 
     useEffect(() => {
+      let smallIcon: L.Icon;
       import("leaflet").then(L => {
         if (!mapContainer.current || mapRef.current) return
         mapRef.current = L.map(mapContainer.current).setView([value?.lat || 20, value?.lng || 0], 2)
@@ -67,7 +68,7 @@ export default function ReportPage() {
           }
         ).addTo(mapRef.current)
         // Define a small marker icon
-        const smallIcon = L.icon({
+        smallIcon = L.icon({
           iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
           iconSize: [20, 32], // smaller than default [25, 41]
           iconAnchor: [10, 32],
@@ -76,19 +77,19 @@ export default function ReportPage() {
           shadowSize: [32, 32],
         })
         if (value) {
-          markerRef.current = L.marker([value.lat, value.lng], { draggable: true, icon: smallIcon }).addTo(mapRef.current)
-          markerRef.current.on("dragend", (e: any) => {
+          markerRef.current = L.marker([value.lat, value.lng], { draggable: true, icon: smallIcon }).addTo(mapRef.current!)
+          markerRef.current.on("dragend", (e: DragEndEvent) => {
             const { lat, lng } = e.target.getLatLng()
             onChange({ lat, lng })
           })
         }
-        mapRef.current.on("click", (e: any) => {
+        mapRef.current.on("click", (e: LeafletMouseEvent) => {
           const { lat, lng } = e.latlng
           if (markerRef.current) {
             markerRef.current.setLatLng([lat, lng])
           } else {
-            markerRef.current = L.marker([lat, lng], { draggable: true, icon: smallIcon }).addTo(mapRef.current)
-            markerRef.current.on("dragend", (e: any) => {
+            markerRef.current = L.marker([lat, lng], { draggable: true, icon: smallIcon }).addTo(mapRef.current!)
+            markerRef.current.on("dragend", (e: DragEndEvent) => {
               const { lat, lng } = e.target.getLatLng()
               onChange({ lat, lng })
             })
@@ -96,8 +97,7 @@ export default function ReportPage() {
           onChange({ lat, lng })
         })
         // Store the icon for later use
-        markerRef.current && (markerRef.current.options.icon = smallIcon)
-        mapRef.current._smallIcon = smallIcon
+        if (markerRef.current) markerRef.current.options.icon = smallIcon;
       })
       return () => {
         if (mapRef.current) {
@@ -105,15 +105,15 @@ export default function ReportPage() {
           mapRef.current = null
         }
       }
-    }, [])
+    }, [onChange, value])
 
     useEffect(() => {
       if (mapRef.current && value && markerRef.current) {
         markerRef.current.setLatLng([value.lat, value.lng])
         mapRef.current.setView([value.lat, value.lng], mapRef.current.getZoom())
-        // Update marker icon to small if needed
-        if (mapRef.current._smallIcon) {
-          markerRef.current.setIcon(mapRef.current._smallIcon)
+        // TODO :: Update marker icon to small if needed
+        if (markerRef?.current?.options?.icon) {
+          markerRef.current.setIcon(markerRef.current.options.icon)
         }
       }
     }, [value])
@@ -151,7 +151,7 @@ export default function ReportPage() {
         <h2 className="text-3xl font-bold tracking-tight">Report an Incident</h2>
       </div>
 
-      <Tabs defaultValue="crime" onValueChange={setReportType}>
+      <Tabs defaultValue="crime">
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="crime">Crime Report</TabsTrigger>
           <TabsTrigger value="suspicious">Suspicious Activity</TabsTrigger>

@@ -2,6 +2,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { useEffect, useRef } from "react"
 import "leaflet/dist/leaflet.css"
+import type { Map as LeafletMap } from "leaflet"
 
 // Mock crime data for demonstration
 const crimeData = [
@@ -13,12 +14,12 @@ const crimeData = [
 ]
 
 interface CrimeMapProps {
-  type: "heatmap" | "markers" | "clusters"
+  type: string;
   crimeType: string
   timeRange: string
 }
 
-export function CrimeMap({ type, crimeType, timeRange }: CrimeMapProps) {
+export function CrimeMap({ crimeType, timeRange }: CrimeMapProps) {
   // Filter crime data based on props
   const filteredData = crimeData.filter((crime) => {
     const matchesType = crimeType === "all" || crime.type === crimeType
@@ -27,7 +28,7 @@ export function CrimeMap({ type, crimeType, timeRange }: CrimeMapProps) {
 
   // MapTiler integration
   const mapContainer = useRef<HTMLDivElement>(null)
-  const mapRef = useRef<any>(null)
+  const mapRef = useRef<LeafletMap | null>(null)
   useEffect(() => {
     // Dynamically import leaflet to avoid SSR issues
     import("leaflet").then(L => {
@@ -45,13 +46,13 @@ export function CrimeMap({ type, crimeType, timeRange }: CrimeMapProps) {
           attribution:
             '&copy; <a href="https://api.maptiler.com/maps/streets-v2/?key=p5xhZro5kxtcZtWPSxsL#1.0/0.00000/0.00000">MapTiler</a>',
         }
-      ).addTo(mapRef.current);
+      ).addTo(mapRef.current as L.Map);
     });
 
     return () => {
-      if (mapRef.current) {
-        mapRef.current.remove();
-        mapRef.current = null;
+      if (mapRef.current as L.Map) {
+        (mapRef.current as L.Map).remove();
+        mapRef.current= null;
       }
     };
   }, []);

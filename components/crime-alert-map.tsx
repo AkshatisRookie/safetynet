@@ -40,7 +40,7 @@ export function CrimeAlertMap() {
 
   // MapTiler integration
   const mapContainer = useRef<HTMLDivElement>(null)
-  const mapRef = useRef<any>(null)
+  const mapRef = useRef<unknown>(null)
   useEffect(() => {
     // Dynamically import leaflet to avoid SSR issues
     import("leaflet").then(L => {
@@ -58,12 +58,12 @@ export function CrimeAlertMap() {
           attribution:
             '&copy; <a href="https://api.maptiler.com/maps/streets-v2/?key=p5xhZro5kxtcZtWPSxsL#1.0/0.00000/0.00000">MapTiler</a>',
         }
-      ).addTo(mapRef.current)
+      ).addTo(mapRef.current as L.Map)
     })
 
     return () => {
       if (mapRef.current) {
-        mapRef.current.remove()
+        (mapRef.current as L.Map).remove()
         mapRef.current = null
       }
     }
