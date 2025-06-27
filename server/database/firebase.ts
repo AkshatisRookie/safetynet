@@ -1,3 +1,4 @@
+'use client';
 
 // Import necessary Firebase modules
 import { initializeApp, getApps, FirebaseApp } from "firebase/app";

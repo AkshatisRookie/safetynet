@@ -44,7 +44,7 @@ export default function LoginPage() {
       const userCredential = await signInWithEmailAndPassword(auth, email, password)
       
       // Get user data from Firestore
-      const userDoc = await getDoc(doc(db, "users", userCredential.user.uid))
+      const userDoc = await getDoc(doc(db, "users", userCredential?.user?.uid))
       const userData = userDoc.data()
 
       if (!userData) {
